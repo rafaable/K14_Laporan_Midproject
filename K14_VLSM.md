@@ -680,7 +680,7 @@ Pengujian menggunakan dua berkas Mid-Project. Routing OSPF dan link cadangan diu
 
 Konfigurasi dan uji bagian ini menggunakan `K14_VLSM_OSPF.pkt`.
 
-![Topologi OSPF dengan link cadangan L7, L8, dan L9](bukti/no-7-8/K14_Topologi_OSPF.png)
+![Topologi OSPF dengan link cadangan L7, L8, dan L9](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_Topologi_OSPF.png)
 
 File OSPF mengganti static route internal dengan **OSPF process 1, area 0**. OSPF mencakup sembilan link backbone internal dan 14 subnet LAN. Interface LAN dikonfigurasi `passive-interface` agar prefix tetap diumumkan tanpa mengirim Hello ke klien. `Tunnel0` berada di luar adjacency OSPF. R-PUSAT menyimpan default route ke `203.0.113.57` dan menjalankan `default-information originate`. R-UTARA menerima default tersebut sebagai OSPF eksternal tipe 2.
 
@@ -708,7 +708,7 @@ Link backbone memakai tipe OSPF point-to-point. L7 ditambahkan sesuai soal. L8 d
 2. Jalankan `show ip route 10.112.239.2` di router yang sama. Jaringan Server-DC `10.112.239.0/24` tercatat sebagai rute intra-area dari `ospf 1`, dengan next hop `10.112.241.46` pada `Ethernet0/0/0`. Hasil ini menjadi acuan jalur utama sebelum failover.
 3. Di R-UTARA, jalankan `show ip route 0.0.0.0`. Hasilnya menunjukkan default route OSPF eksternal tipe 2 yang diterima dari R-PUSAT lewat `10.112.241.33`. Dengan begitu, R-UTARA mendapat jalur keluar tanpa default route statis di router tersebut.
 
-![Bukti neighbor dan rute internal](bukti/no-7-8/K14_No7_OSPF_FULL.png)
+![Bukti neighbor dan rute internal](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No7_OSPF_FULL.png)
 
 #### 11.1.2 Failover saat L1 diputus
 
@@ -718,9 +718,9 @@ Link backbone memakai tipe OSPF point-to-point. L7 ditambahkan sesuai soal. L8 d
 4. Saat L1 masih putus, jalankan `do traceroute 10.112.239.2` dari mode konfigurasi interface R-PUSAT. Traceroute mencapai Server-DC dalam tiga hop dan menampilkan `10.112.241.57`, alamat R-DC pada L7. Ini mengonfirmasi perpindahan jalur melalui R-UTARA dan L7.
 5. Aktifkan kembali interface dengan `no shutdown`. Log menunjukkan interface kembali `up` dan adjacency R-DC kembali `FULL`.
 
-![Ping PC-Balai terputus sesaat lalu pulih saat L1 masih putus](bukti/no-7-8/K14_No7_Ping_Failover.png)
+![Ping PC-Balai terputus sesaat lalu pulih saat L1 masih putus](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No7_Ping_Failover.png)
 
-![Traceroute jalur utama dan cadangan serta pemulihan L1](bukti/no-7-8/K14_No7_Traceroute_Failover.png)
+![Traceroute jalur utama dan cadangan serta pemulihan L1](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No7_Traceroute_Failover.png)
 
 #### 11.1.3 Uji pemutusan link L1 hingga L6
 
@@ -753,9 +753,9 @@ Layanan pada bagian ini diuji pada file utama `K14_VLSM.pkt`. Domain internal ya
 2. Dari PC-Balai dan PC-Kantor-Pel, buka **Desktop > Command Prompt**. Jalankan `nslookup www.k14.smartcity.lab`, `nslookup ftp.k14.smartcity.lab`, dan `nslookup mail.k14.smartcity.lab`.
 3. Kedua PC menerima hasil yang sama. Nama `www` mengarah ke Server-Balai `10.112.241.2`. Nama `ftp` dan `mail` mengarah ke Server-DC `10.112.239.2`. Ini membuktikan resolusi ketiga nama dari dua wilayah.
 
-![Bukti DNS dari Balai](bukti/no-7-8/K14_No8_DNS_Balai.png)
+![Bukti DNS dari Balai](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_DNS_Balai.png)
 
-![Bukti DNS dari Pelabuhan](bukti/no-7-8/K14_No8_DNS_Pelabuhan.png)
+![Bukti DNS dari Pelabuhan](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_DNS_Pelabuhan.png)
 
 #### 11.2.2 Web
 
@@ -763,9 +763,9 @@ Layanan pada bagian ini diuji pada file utama `K14_VLSM.pkt`. Domain internal ya
 2. Pada PC-Balai dan PC-Kantor-Pel, buka **Desktop > Web Browser**. Masukkan `http://www.k14.smartcity.lab` dan klik **Go**.
 3. Portal tampil di kedua PC dengan nama domain pada bilah URL. Hasil ini membuktikan bahwa kedua klien dapat meresolusi nama portal dan membuka halaman dari Server-Balai melalui HTTP.
 
-![Portal Kelompok 14 diakses melalui domain dari Pelabuhan](bukti/no-7-8/K14_No8_Portal_Pelabuhan.png)
+![Portal Kelompok 14 diakses melalui domain dari Pelabuhan](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_Portal_Pelabuhan.png)
 
-![Bukti web dari Balai](bukti/no-7-8/K14_No8_Portal_Balai.png)
+![Bukti web dari Balai](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_Portal_Balai.png)
 
 #### 11.2.3 FTP
 
@@ -773,9 +773,9 @@ Layanan pada bagian ini diuji pada file utama `K14_VLSM.pkt`. Domain internal ya
 2. Di **PC CCTV DC > Desktop > Command Prompt**, jalankan `ftp ftp.k14.smartcity.lab` dan login dengan akun tersebut. Jalankan `put rekaman_cctv_k14.txt`. Terminal menampilkan `Transfer complete - 50 bytes`, yang menunjukkan file dari LAN CCTV berhasil diunggah ke Server-DC.
 3. Di PC-Kantor-Pel, hubungkan klien FTP ke domain yang sama, login, lalu jalankan `get rekaman_cctv_k14.txt`. Transfer selesai dengan ukuran 50 byte. Uji ini menunjukkan bahwa perangkat Pelabuhan dapat mengunduh file yang diunggah dari LAN CCTV.
 
-![Bukti unggah dari CCTV](bukti/no-7-8/K14_No8_FTP_CCTV.png)
+![Bukti unggah dari CCTV](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_FTP_CCTV.png)
 
-![Bukti unduh dari Pelabuhan](bukti/no-7-8/K14_No8_FTP_Pelabuhan.png)
+![Bukti unduh dari Pelabuhan](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_FTP_Pelabuhan.png)
 
 #### 11.2.4 Email
 
@@ -783,6 +783,6 @@ Layanan pada bagian ini diuji pada file utama `K14_VLSM.pkt`. Domain internal ya
 2. Dari **PC-Balai > Desktop > Email**, kirim pesan uji ke akun Pelabuhan. Di PC-Kantor-Pel, klik **Receive**. Pesan dari Balai muncul di kotak masuk dan aplikasi menampilkan `Receive Mail Success`.
 3. Di Pelabuhan, klik **Reply** dan kirim balasan. Di PC-Balai, klik **Receive**. Balasan muncul dengan alamat pengirim Pelabuhan dan status penerimaan sukses. Pengujian ini membuktikan pengiriman lewat SMTP dan pengambilan dari kotak masuk lewat POP3 pada kedua arah.
 
-![Bukti pesan masuk di Pelabuhan](bukti/no-7-8/K14_No8_POP3_Pelabuhan.png)
+![Bukti pesan masuk di Pelabuhan](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_POP3_Pelabuhan.png)
 
-![Bukti balasan masuk di Balai](bukti/no-7-8/K14_No8_POP3_Balai.png)
+![Bukti balasan masuk di Balai](https://raw.githubusercontent.com/rafaable/K14_Laporan_Midproject/31374a9f6390b6373d75d4c39d5c338eb3028daa/K14_No8_POP3_Balai.png)
