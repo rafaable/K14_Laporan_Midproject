@@ -668,4 +668,119 @@ Isi tabel berikut hanya setelah pengujian benar-benar dijalankan. Bukti dapat be
 
 ## 10. Kesimpulan
 
-Rancangan VLSM Kelompok 14 telah memenuhi kebutuhan pengalamatan secara statis: seluruh 20 subnet internal muat dalam `10.112.0.0/16`, setiap LAN memperoleh kapasitas minimum yang cukup, dan tidak terdapat overlap. Total alokasi adalah **61.752 alamat (94,23%)** dengan **3.784 alamat belum dialokasikan**. 
+Rancangan VLSM Kelompok 14 telah memenuhi kebutuhan pengalamatan secara statis: seluruh 20 subnet internal muat dalam `10.112.0.0/16`, setiap LAN memperoleh kapasitas minimum yang cukup, dan tidak terdapat overlap. Total alokasi adalah **61.752 alamat (94,23%)** dengan **3.784 alamat belum dialokasikan**.
+
+## 11. Implementasi dan pengujian Mid-Project
+
+Bagian ini mendokumentasikan hasil pengujian Cisco Packet Tracer untuk soal 7 dan 8. Bagian 1–10 mencatat rancangan VLSM dan pemeriksaan berkas awal. Hasil aktual kedua soal ada di bagian 11.1 dan 11.2.
+
+Pengujian menggunakan dua berkas Mid-Project. Routing OSPF dan link cadangan diuji di `K14_VLSM_OSPF.pkt`. Layanan DNS, web, FTP, dan email diuji di `K14_VLSM.pkt`. Pada kedua berkas, link Pusat–ISP memakai `203.0.113.56/30` sesuai rumus soal `4 × 14 = 56`, dengan R-ISP `203.0.113.57` dan R-PUSAT `203.0.113.58`. Untuk uji layanan, Server-DC menyediakan DNS di `10.112.239.2` dengan domain `k14.smartcity.lab`.
+
+### 11.1 Soal 7 — OSPF dan failover
+
+Konfigurasi dan uji bagian ini menggunakan `K14_VLSM_OSPF.pkt`.
+
+[Topologi OSPF dengan link cadangan L7, L8, dan L9](bukti/no-7-8/K14_Topologi_OSPF.png)
+
+File OSPF mengganti static route internal dengan **OSPF process 1, area 0**. OSPF mencakup sembilan link backbone internal dan 14 subnet LAN. Interface LAN dikonfigurasi `passive-interface` agar prefix tetap diumumkan tanpa mengirim Hello ke klien. `Tunnel0` berada di luar adjacency OSPF. R-PUSAT menyimpan default route ke `203.0.113.57` dan menjalankan `default-information originate`. R-UTARA menerima default tersebut sebagai OSPF eksternal tipe 2.
+
+| Router | Router ID | LAN pasif |
+| --- | --- | --- |
+| R-PUSAT | `10.255.14.1` | Fa1/0, Fa1/1 |
+| R-DC | `10.255.14.2` | Fa0/1, Fa1/0 |
+| R-UTARA | `10.255.14.3` | Fa1/0, Fa1/1 |
+| R-SELATAN | `10.255.14.4` | Fa0/1, Fa1/0 |
+| R-TIMUR | `10.255.14.5` | Fa0/1, Fa1/0 |
+| R-BARAT | `10.255.14.6` | Fa0/1, Fa1/0 |
+| R-PELABUHAN | `10.255.14.7` | Fa0/1, Fa1/0 |
+
+Link backbone memakai tipe OSPF point-to-point. L7 ditambahkan sesuai soal. L8 dan L9 melengkapi jalur alternatif saat L3–L6 putus. Biaya OSPF link cadangan disetel lebih tinggi untuk mempertahankan jalur utama saat kondisi normal.
+
+| Link | Network/prefix | Ujung pertama | Ujung kedua | Fungsi |
+| --- | --- | --- | --- | --- |
+| L7 | `10.112.241.56/30` | R-DC `Fa1/1 · 10.112.241.57` | R-UTARA `Eth0/0/0 · 10.112.241.58` | Cadangan L1 dan L2 |
+| L8 | `10.112.241.60/30` | R-SELATAN `Eth0/1/0 · 10.112.241.61` | R-TIMUR `Eth0/1/0 · 10.112.241.62` | Cadangan L3 dan L4 |
+| L9 | `10.112.241.64/30` | R-BARAT `Eth0/1/0 · 10.112.241.65` | R-PELABUHAN `Eth0/1/0 · 10.112.241.66` | Cadangan L5 dan L6 |
+
+#### 11.1.1 Neighbor, rute internal, dan default route
+
+1. Di CLI R-PUSAT, jalankan `show ip ospf neighbor`. Kelima neighbor mencapai status `FULL`. Status ini menunjukkan bahwa router sudah membentuk adjacency dan menyelesaikan pertukaran informasi OSPF.
+2. Jalankan `show ip route 10.112.239.2` di router yang sama. Jaringan Server-DC `10.112.239.0/24` tercatat sebagai rute intra-area dari `ospf 1`, dengan next hop `10.112.241.46` pada `Ethernet0/0/0`. Hasil ini menjadi acuan jalur utama sebelum failover.
+3. Di R-UTARA, jalankan `show ip route 0.0.0.0`. Hasilnya menunjukkan default route OSPF eksternal tipe 2 yang diterima dari R-PUSAT lewat `10.112.241.33`. Dengan begitu, R-UTARA mendapat jalur keluar tanpa default route statis di router tersebut.
+
+[Bukti neighbor dan rute internal](bukti/no-7-8/K14_No7_OSPF_FULL.png) | [Transkrip uji, termasuk default route R-UTARA](bukti/no-7-8/Bukti_Uji_OSPF_K14.txt)
+
+#### 11.1.2 Failover saat L1 diputus
+
+1. Di R-PUSAT, jalankan `traceroute 10.112.239.2`. Hasil awal mencapai Server-DC lewat `10.112.241.46`, yaitu alamat R-DC pada L1.
+2. Di PC-Balai, buka **Desktop > Command Prompt** dan jalankan `ping -t 10.112.239.2`. Setelah beberapa balasan masuk, jalankan `shutdown` pada `Ethernet0/0/0` R-PUSAT untuk memutus L1.
+3. Ping mencatat dua `Request timed out` lalu kembali menerima balasan saat L1 masih putus. Dalam pengujian ini, 21 dari 23 paket mendapat balasan. TTL balasan berubah dari 126 menjadi 125, konsisten dengan penambahan satu hop melalui jalur cadangan.
+4. Saat L1 masih putus, jalankan `do traceroute 10.112.239.2` dari mode konfigurasi interface R-PUSAT. Traceroute mencapai Server-DC dalam tiga hop dan menampilkan `10.112.241.57`, alamat R-DC pada L7. Ini mengonfirmasi perpindahan jalur melalui R-UTARA dan L7.
+5. Aktifkan kembali interface dengan `no shutdown`. Log menunjukkan interface kembali `up` dan adjacency R-DC kembali `FULL`.
+
+![Ping PC-Balai terputus sesaat lalu pulih saat L1 masih putus](bukti/no-7-8/K14_No7_Ping_Failover.png)
+
+[Traceroute jalur utama dan cadangan serta pemulihan L1](bukti/no-7-8/K14_No7_Traceroute_Failover.png)
+
+#### 11.1.3 Uji pemutusan link L1 hingga L6
+
+Setiap link utama dimatikan secara bergantian. Setelah OSPF menghitung ulang rute, jalankan ping dari router sumber ke tujuan pada tabel. Aktifkan kembali link dan tunggu adjacency pulih sebelum menguji link berikutnya.
+
+| Link putus | Sumber → tujuan | Jalur pengganti | Ping setelah konvergensi |
+| --- | --- | --- | --- |
+| L1 | R-PUSAT → Server-DC `10.112.239.2` | R-UTARA → R-DC melalui L7 | 5/5 |
+| L2 | R-PUSAT → gateway WiFi Utara `10.112.0.1` | R-DC → R-UTARA melalui L7 | 5/5 |
+| L3 | R-PUSAT → gateway PJU Selatan `10.112.240.129` | R-TIMUR → R-SELATAN melalui L8 | 5/5 |
+| L4 | R-PUSAT → gateway Sensor Timur `10.112.232.1` | R-SELATAN → R-TIMUR melalui L8 | 5/5 |
+| L5 | R-PUSAT → gateway Puskesmas Barat `10.112.238.1` | R-UTARA → R-PELABUHAN → R-BARAT melalui L9 | 5/5 |
+| L6 | R-UTARA → gateway Kantor Pelabuhan `10.112.240.1` | R-PUSAT → R-BARAT → R-PELABUHAN melalui L9 | 5/5 |
+
+Semua tujuan kembali menerima lima dari lima balasan setelah konvergensi. Uji pemutusan langsung mencakup L1 hingga L6. Untuk L7 hingga L9, pemeriksaan topologi memastikan router internal tetap punya jalur ketika salah satu link cadangan dihilangkan.
+
+### 11.2 Soal 8 — Layanan aplikasi Smart City
+
+Layanan pada bagian ini diuji pada file utama `K14_VLSM.pkt`. Domain internal yang dipakai adalah `k14.smartcity.lab`.
+
+| Nama DNS | Tipe | Tujuan | Layanan |
+| --- | --- | --- | --- |
+| `www.k14.smartcity.lab` | A | Server-Balai `10.112.241.2` | HTTP, halaman **Portal Smart City Surabaya · Kelompok 14** |
+| `ftp.k14.smartcity.lab` | A | Server-DC `10.112.239.2` | FTP penyimpanan rekaman CCTV |
+| `mail.k14.smartcity.lab` | A | Server-DC `10.112.239.2` | SMTP untuk pengiriman dan POP3 untuk penerimaan |
+
+#### 11.2.1 DNS
+
+1. Aktifkan layanan DNS di **Server-DC > Services > DNS** dan gunakan tiga A record pada tabel. Klien memakai DNS `10.112.239.2`.
+2. Dari PC-Balai dan PC-Kantor-Pel, buka **Desktop > Command Prompt**. Jalankan `nslookup www.k14.smartcity.lab`, `nslookup ftp.k14.smartcity.lab`, dan `nslookup mail.k14.smartcity.lab`.
+3. Kedua PC menerima hasil yang sama. Nama `www` mengarah ke Server-Balai `10.112.241.2`. Nama `ftp` dan `mail` mengarah ke Server-DC `10.112.239.2`. Ini membuktikan resolusi ketiga nama dari dua wilayah.
+
+[Bukti DNS dari Balai](bukti/no-7-8/K14_No8_DNS_Balai.png) | [Bukti DNS dari Pelabuhan](bukti/no-7-8/K14_No8_DNS_Pelabuhan.png)
+
+#### 11.2.2 Web
+
+1. Aktifkan layanan HTTP di **Server-Balai > Services > HTTP**. Halaman utama berisi judul **Portal Smart City Surabaya** dan identitas **Kelompok 14**.
+2. Pada PC-Balai dan PC-Kantor-Pel, buka **Desktop > Web Browser**. Masukkan `http://www.k14.smartcity.lab` dan klik **Go**.
+3. Portal tampil di kedua PC dengan nama domain pada bilah URL. Hasil ini membuktikan bahwa kedua klien dapat meresolusi nama portal dan membuka halaman dari Server-Balai melalui HTTP.
+
+![Portal Kelompok 14 diakses melalui domain dari Pelabuhan](bukti/no-7-8/K14_No8_Portal_Pelabuhan.png)
+
+[Bukti web dari Balai](bukti/no-7-8/K14_No8_Portal_Balai.png)
+
+#### 11.2.3 FTP
+
+1. Aktifkan FTP di **Server-DC > Services > FTP**. Akun simulasi `cctv14` diberi izin baca, tulis, dan melihat daftar file.
+2. Di **PC CCTV DC > Desktop > Command Prompt**, jalankan `ftp ftp.k14.smartcity.lab` dan login dengan akun tersebut. Jalankan `put rekaman_cctv_k14.txt`. Terminal menampilkan `Transfer complete - 50 bytes`, yang menunjukkan file dari LAN CCTV berhasil diunggah ke Server-DC.
+3. Di PC-Kantor-Pel, hubungkan klien FTP ke domain yang sama, login, lalu jalankan `get rekaman_cctv_k14.txt`. Transfer selesai dengan ukuran 50 byte. Uji ini menunjukkan bahwa perangkat Pelabuhan dapat mengunduh file yang diunggah dari LAN CCTV.
+
+[Bukti unggah dari CCTV](bukti/no-7-8/K14_No8_FTP_CCTV.png) | [Bukti unduh dari Pelabuhan](bukti/no-7-8/K14_No8_FTP_Pelabuhan.png)
+
+#### 11.2.4 Email
+
+1. Aktifkan SMTP dan POP3 di **Server-DC > Services > EMAIL** untuk domain `k14.smartcity.lab`. Atur server masuk dan keluar ke `mail.k14.smartcity.lab` pada PC-Balai dan PC-Kantor-Pel. Akun yang digunakan adalah `balai@k14.smartcity.lab` dan `pelabuhan@k14.smartcity.lab`.
+2. Dari **PC-Balai > Desktop > Email**, kirim pesan uji ke akun Pelabuhan. Di PC-Kantor-Pel, klik **Receive**. Pesan dari Balai muncul di kotak masuk dan aplikasi menampilkan `Receive Mail Success`.
+3. Di Pelabuhan, klik **Reply** dan kirim balasan. Di PC-Balai, klik **Receive**. Balasan muncul dengan alamat pengirim Pelabuhan dan status penerimaan sukses. Pengujian ini membuktikan pengiriman lewat SMTP dan pengambilan dari kotak masuk lewat POP3 pada kedua arah.
+
+[Bukti pesan masuk di Pelabuhan](bukti/no-7-8/K14_No8_POP3_Pelabuhan.png) | [Bukti balasan masuk di Balai](bukti/no-7-8/K14_No8_POP3_Balai.png)
+
+Bukti uji DNS dan web pada bagian ini mencakup Balai Kota dan Pelabuhan. Akses DNS dan web dari wilayah lain masih perlu diverifikasi.
+
+[Transkrip pengujian DNS, web, FTP, dan email](bukti/no-7-8/Bukti_Uji_No8_K14.txt)
