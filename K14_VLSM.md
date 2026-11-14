@@ -786,5 +786,3 @@ Layanan pada bagian ini diuji pada file utama `K14_VLSM.pkt`. Domain internal ya
 ![Bukti pesan masuk di Pelabuhan](bukti/no-7-8/K14_No8_POP3_Pelabuhan.png)
 
 ![Bukti balasan masuk di Balai](bukti/no-7-8/K14_No8_POP3_Balai.png)
-
-Bukti uji DNS dan web pada bagian ini mencakup Balai Kota dan Pelabuhan. Akses DNS dan web dari wilayah lain masih perlu diverifikasi.
