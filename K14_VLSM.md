@@ -52,6 +52,8 @@ flowchart TD
 
 `R-PUSAT` menjadi penghubung antarwilayah dan pintu keluar ke ISP. `R-UTARA` juga menjadi transit menuju Pelabuhan. Setiap router internal melayani dua LAN terpisah melalui switch masing-masing; WiFi menambahkan access point. Terdapat **7 router internal, 1 router ISP, 14 switch, 4 access point**, dan host perwakilan. Pemetaan LAN dan port tercantum pada bagian 6.
 
+![](K14_Topologi_Utama.png)
+
 ## 4. Tabel kebutuhan subnet
 
 Kolom **Min. alamat** mencakup endpoint, gateway, network, dan broadcast. Kapasitas host valid masih mencakup alamat yang dipakai gateway.
@@ -405,6 +407,8 @@ Jalankan command **Uji lokal** pada baris host masing-masing. Di PC, keberhasila
 
 **Lulus tahap ini:** host statis ber-IP benar dan dapat melakukan ping ke gateway masing-masing. WiFi dicek pada tahap 9.7.
 
+![](K14_02-switch-balai.png)
+
 ### 9.4 Cek setiap link router dua arah
 
 **Jalankan di:** CLI router pada kolom yang sesuai, mode `#`. Setiap sel berisi router asal dan command yang diketik di router tersebut.
@@ -422,6 +426,10 @@ Jalankan command **Uji lokal** pada baris host masing-masing. Di PC, keberhasila
 Pada router, `!` berarti balasan diterima; `.` berarti timeout. Setelah ARP terbentuk, contoh hasil lulus adalah `!!!!!` dengan `Success rate is 100 percent (5/5)`. Jika gagal terus, cocokkan kedua IP, mask `/30`, status port, dan kabel pada link tersebut. Ping langsung ke tetangga satu subnet ini tidak memerlukan OSPF.
 
 **Lulus tahap ini:** ketujuh link di atas dapat diping dua arah.
+
+![](K14_03-link-pusat-ke-dc.png)
+
+![](K14_03-link-dc-ke-pusat.png)
 
 ### 9.5 Cek tetangga OSPF
 
@@ -556,6 +564,10 @@ Pastikan server memakai `8.8.8.8/24`, gateway `8.8.8.1`, dan R-ISP memiliki rute
 
 **Lulus tahap ini:** seluruh host perwakilan dapat dijangkau, uji balik berhasil, dan server ISP simulasi membalas.
 
+![](K14_07-ping-dc-barat.png)
+
+![](K14_07-ping-balik-pel-balai.png)
+
 ### 9.9 Cek DNS dan HTTP
 
 **Mulai dari PC-Balai → Desktop → Command Prompt:**
@@ -621,6 +633,10 @@ show ip route
 ```
 
 Tetangga melalui Tunnel0 harus mencapai FULL; periksa next-hop tabel rute untuk memastikan jalur yang benar-benar dipilih. **Lulus uji GRE:** endpoint fisik terjangkau dan ping tunnel dua arah berhasil; adjacency FULL hanya diwajibkan jika OSPF melalui GRE sengaja diaktifkan.
+
+![](K14_10-gre-pusat.png)
+
+![](K14_10-gre-pelabuhan.png)
 
 ### 9.11 Ringkasan jika hasil belum sesuai
 
