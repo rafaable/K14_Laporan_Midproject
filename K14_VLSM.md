@@ -1,5 +1,9 @@
 # Laporan VLSM — Smart City Surabaya, Kelompok 14
 
+**Link Youtube:**
+https://youtu.be/37hxPoELcU8?si=zskApNOt7IU6w9uE
+https://www.youtube.com/watch?v=9wFceK8cGio
+
 Rancangan pengalamatan IPv4 untuk jaringan Balai Kota, Command Center, empat wilayah Surabaya, dan Pelabuhan. Implementasi menggunakan Cisco Packet Tracer dengan OSPF, DHCP WiFi, serta simulasi ISP dan tunnel GRE sebagai fitur tambahan.
 
 **Hasil pemeriksaan:** perhitungan VLSM, alamat interface, gateway, dan sambungan 14 LAN serta 6 link internal konsisten dengan PDF dan tidak tumpang tindih. Konfigurasi layanan masih memiliki catatan pada DNS dan verifikasi DHCP/GRE. **Ping, status link, dan konvergensi OSPF belum diuji langsung di Packet Tracer.**
